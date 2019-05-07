@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net"
 	"time"
 
 	"github.com/globalsign/mgo/bson"
@@ -15,12 +14,9 @@ type Node struct {
 	RegisterTime time.Time
 	UpdatedTime  time.Time
 	IsActive     bool
-
-	// connection to send data back to client
-	Conn net.Conn
 }
 
 func NewNode(ip string, port string, serverPort string, registerTime time.Time, updatedTime time.Time, isActive bool) *Node {
-	node := &Node{nil, ip, port, serverPort, registerTime, updatedTime, isActive, nil}
+	node := &Node{bson.NewObjectId(), ip, port, serverPort, registerTime, updatedTime, isActive}
 	return node
 }

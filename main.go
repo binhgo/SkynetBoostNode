@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net"
 	"time"
@@ -32,8 +33,8 @@ func main() {
 
 	go CheckPeerStatus(session)
 	go RemoveInActivePeers(session)
-
-	// handle request
+	go PushPeerDataToRequestedClient(session)
+	go UpdatePeerInfoIntoDatabase(session)
 }
 
 func InsertNode(node *Node, session *mgo.Session) (*Node, error) {
@@ -47,6 +48,19 @@ func InsertNode(node *Node, session *mgo.Session) (*Node, error) {
 	}
 
 	return n, nil
+}
+
+func UpdateNode(node *Node, session *mgo.Session) error {
+	repo := GetRepo(session)
+	defer repo.Close()
+
+	err := repo.Update(node)
+	if err != nil {
+		log.Printf("Error INSERT: %s", err)
+		return err
+	}
+
+	return nil
 }
 
 func GetAllNodes(session *mgo.Session) ([]*Node, error) {
@@ -115,5 +129,31 @@ func InsertNewPeerFromQueue(session *mgo.Session) {
 		}
 
 		log.Printf("Inserted new peer: %s\n", n.MongoID)
+	}
+}
+
+func PushPeerDataToRequestedClient(session *mgo.Session) {
+	for {
+		conn := <-GetQueue
+		allPeers, err := GetAllNodes(session)
+		if err != nil {
+			log.Printf("Error PushPeerDataToRequestedClient.\n Time: %s\n ERR: %s\n", time.Now().String(), err)
+			continue
+		}
+
+		b, err := json.Marshal(allPeers)
+		SendDataToClient(conn, string(b[:]))
+	}
+}
+
+func UpdatePeerInfoIntoDatabase(session *mgo.Session) {
+
+	for {
+		node := <-UpdateQueue
+		err := UpdateNode(node, session)
+		if err != nil {
+			log.Printf("Error UpdatePeerInfoIntoDatabase.\n Time: %s\n ERR: %s\n", time.Now().String(), err)
+			continue
+		}
 	}
 }
