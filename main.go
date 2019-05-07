@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"time"
@@ -90,6 +91,7 @@ func DeleteNode(session *mgo.Session, node *Node) error {
 }
 
 func CheckPeerStatus(session *mgo.Session) {
+	fmt.Printf("Start go routine: CheckPeerStatus\n")
 	for {
 		time.Sleep(time.Second * 60)
 
@@ -109,6 +111,7 @@ func CheckPeerStatus(session *mgo.Session) {
 }
 
 func RemoveInActivePeers(session *mgo.Session) {
+	fmt.Printf("Start go routine: RemoveInActivePeers\n")
 	for {
 		node := <-DeleteQueue
 		err := DeleteNode(session, node)
@@ -120,6 +123,7 @@ func RemoveInActivePeers(session *mgo.Session) {
 }
 
 func InsertNewPeerFromQueue(session *mgo.Session) {
+	fmt.Printf("Start go routine: InsertNewPeerFromQueue\n")
 	for {
 		node := <-InsertQueue
 		n, err := InsertNode(node, session)
@@ -133,6 +137,8 @@ func InsertNewPeerFromQueue(session *mgo.Session) {
 }
 
 func PushPeerDataToRequestedClient(session *mgo.Session) {
+	fmt.Printf("Start go routine: PushPeerDataToRequestedClient\n")
+
 	for {
 		conn := <-GetQueue
 		allPeers, err := GetAllNodes(session)
@@ -147,6 +153,7 @@ func PushPeerDataToRequestedClient(session *mgo.Session) {
 }
 
 func UpdatePeerInfoIntoDatabase(session *mgo.Session) {
+	fmt.Printf("Start go routine: UpdatePeerInfoIntoDatabase\n")
 
 	for {
 		node := <-UpdateQueue

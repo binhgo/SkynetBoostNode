@@ -3,4 +3,4 @@ build:
 	docker build -t skynetboostnode .
 
 run:
-	docker run --link=SkynetMongoDB:mongodb --name skynetboostnode -p 6868:6868 skynetboostnode
+	docker run --link=SkynetMongoDB:mongodb --name SkynetBoostNode -p 6868:6868 skynetboostnode
