@@ -1,2 +1,2 @@
 run:
-	docker run -d --name SkynetMongoDB mongo
+	docker run -d -p 27017:27017 --name MongoDBTest mongo
